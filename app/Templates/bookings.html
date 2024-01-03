@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+            integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+            integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+            crossorigin="anonymous"></script>
+
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+  />
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/main.css') }}">
+    <title>Flight Booking</title>
+</head>
+<body>
+
+<div class="header p-5 bg-primary text-white text-center ">
+    <h1 class = "animate__animated animate__fadeInLeft" style="background:'https://tse3.mm.bing.net/th?id=OIP.eDN-X_5Asrt0MJKvPj1jwQHaE7&pid=Api&P=0&h=180';">Welcome to
+        Flight Booking</h1>
+
+</div>
+<header>
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand animate__animated animate__fadeInUp" href="{{ url_for('home') }}">TRANG CHỦ</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse animate__animated animate__fadeInUp" id="collapsibleNavbar">
+                <ul class="navbar-nav">
+                    {% if not current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('books') }}">Booking</a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Mã chuyến bay</th>
+      <th scope="col">Tên chuyến bay</th>
+      <th scope="col">Giá</th>
+        <th scope="col">Ngày đặt</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for b in bookings %}
+    <tr>
+      <th scope="row">{{ loop.index }}</th>
+      <td>{{ b.id }}</td>
+      <td>{{ b.flight.name }}</td>
+      <td>{{ '{:,}'.format(b.flight.price) }}</td>
+        <td> {{ b.time }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+</body>
+</html>
