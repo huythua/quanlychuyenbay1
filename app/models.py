@@ -263,12 +263,30 @@ if __name__ == '__main__':
         db.session.add_all([gv1, gv2, gv3, gv4])
 
         ngay=datetime(2024,2,12,12,40,00)
-        cb1 = ChuyenBay(tuyenbay_id=1, maybay_id=1, soluongghe1= 5, soluongghe2= 9,ngaybay=ngay, tinhtrang=True,image="https://wallpapercave.com/wp/9aungfd.jpg", name=' ')
-        cb2 = ChuyenBay(tuyenbay_id=2, maybay_id=2, soluongghe1=10, soluongghe2= 6,ngaybay=ngay, tinhtrang=True,
+        cb1 = ChuyenBay(tuyenbay_id=1, maybay_id=1, soluongghe1= 5, soluongghe2= 4,ngaybay=ngay, tinhtrang=True,image="https://wallpapercave.com/wp/9aungfd.jpg", name=' ')
+        cb2 = ChuyenBay(tuyenbay_id=2, maybay_id=2, soluongghe1=4, soluongghe2= 6,ngaybay=ngay, tinhtrang=True,
                         image="https://wallpapercave.com/wp/9aungfd.jpg", name=' ')
         db.session.add_all([cb1,cb2])
 
-        ghe1cb1= SoLuongGhe()
+        ghe1cb1= SoLuongGhe(ghe_id=1, chuyenbay_id=1)
+        ghe2cb1 = SoLuongGhe(ghe_id=2, chuyenbay_id=1)
+        ghe3cb1 = SoLuongGhe(ghe_id=3, chuyenbay_id=1)
+        ghe4cb1 = SoLuongGhe(ghe_id=4, chuyenbay_id=1)
+        ghe5cb1 = SoLuongGhe(ghe_id=5, chuyenbay_id=1)
+        ghe6cb1 = SoLuongGhe(ghe_id=11, chuyenbay_id=2)
+        ghe7cb1 = SoLuongGhe(ghe_id=12, chuyenbay_id=2)
+        ghe8cb1 = SoLuongGhe(ghe_id=13, chuyenbay_id=2)
+        ghe9cb1 = SoLuongGhe(ghe_id=14, chuyenbay_id=2)
+        db.session.add_all([ghe1cb1, ghe2cb1,ghe3cb1, ghe4cb1, ghe5cb1, ghe6cb1,ghe7cb1, ghe8cb1,ghe9cb1])
 
+        ghe1cb2 = SoLuongGhe(ghe_id=1, chuyenbay_id=1)
+        ghe2cb2 = SoLuongGhe(ghe_id=2, chuyenbay_id=1)
+        ghe3cb2 = SoLuongGhe(ghe_id=3, chuyenbay_id=1)
+        ghe4cb2 = SoLuongGhe(ghe_id=4, chuyenbay_id=1)
+        ghe5cb2 = SoLuongGhe(ghe_id=11, chuyenbay_id=2)
+        ghe6cb2 = SoLuongGhe(ghe_id=12, chuyenbay_id=2)
+        ghe7cb2 = SoLuongGhe(ghe_id=13, chuyenbay_id=2)
+        ghe8cb2 = SoLuongGhe(ghe_id=14, chuyenbay_id=2)
+        db.session.add_all([ghe1cb2, ghe2cb2, ghe3cb2, ghe4cb2, ghe5cb2, ghe6cb2, ghe7cb2, ghe8cb2, ghe8cb2])
 
         db.session.commit()
