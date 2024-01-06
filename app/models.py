@@ -22,33 +22,68 @@ class MayBay(BaseModel):
     chuyenbay = relationship('ChuyenBay', backref='maybay', lazy=True)
     def __str__(self):
         return self.name
-class TuyenBay(BaseModel):
+
+
+class TuyenBay(db.Model):
     __tablename__ = 'tuyenbay'
-    name = Column(String(50), nullable=False, unique= True )
-    diemdi = Column(String(50), nullable=False)
-    diemden = Column(String(50), nullable=False)
-    sanbay_id = Column(Integer, ForeignKey('sanbay.id'), nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False, unique=True)
+    diemdi_id = Column(Integer, ForeignKey('sanbay.id'), nullable=False)
+    diemden_id = Column(Integer, ForeignKey('sanbay.id'), nullable=False)
     quangduong = Column(String(50), nullable=False)
-    sanbaytrunggians = relationship('SanBayTrungGian',backref='tuyenbay')
+
+    diemdi = relationship('SanBay', foreign_keys=[diemdi_id], back_populates='tuyenbays_di', lazy=True)
+    diemden = relationship('SanBay', foreign_keys=[diemden_id], back_populates='tuyenbays_den', lazy=True)
+    sanbaytrunggians = relationship('SanBayTrungGian', backref='tuyenbay')
     giave = relationship('GiaVe', backref='tuyenbay', lazy=True)
+
     def __str__(self):
         return self.name
-class SanBay(BaseModel):
+
+
+class SanBay(db.Model):
     __tablename__ = 'sanbay'
+    id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
     quocgia = Column(String(50), nullable=False)
     sanbaytrunggians = relationship('SanBayTrungGian', backref='sanbay', lazy=True)
-    tuyenbays = relationship('TuyenBay', backref='sanbay', lazy=True)
+    tuyenbays_di = relationship('TuyenBay', foreign_keys=[TuyenBay.diemdi_id], back_populates='diemdi', lazy=True)
+    tuyenbays_den = relationship('TuyenBay', foreign_keys=[TuyenBay.diemden_id], back_populates='diemden', lazy=True)
+
     def __str__(self):
         return self.name
 class SanBayTrungGian(db.Model):
     __tablename__ = 'sanbaytrunggian'
-    ghichu = Column(String(50), nullable=False)
-    time = Column(String(20), default=10)
     tuyenbay_id = Column(Integer, ForeignKey('tuyenbay.id'), primary_key=True, nullable=False)
     sanbay_id = Column(Integer, ForeignKey('sanbay.id'), primary_key=True, nullable=False)
+    ghichu = Column(String(50), nullable=False)
+    time = Column(String(20), default=10)
+
     def __str__(self):
-        return self.sanbay.name
+        return f"{self.sanbay.name} "
+
+
+
+# class TuyenBay(BaseModel):
+#     __tablename__ = 'tuyenbay'
+#     name = Column(String(50), nullable=False, unique= True )
+#     diemdi = Column(String(50), nullable=False)
+#     diemden = Column(String(50), nullable=False)
+#     sanbay_id = Column(Integer, ForeignKey('sanbay.id'), nullable=False)
+#     quangduong = Column(String(50), nullable=False)
+#     sanbaytrunggians = relationship('SanBayTrungGian',backref='tuyenbay')
+#     giave = relationship('GiaVe', backref='tuyenbay', lazy=True)
+#     def __str__(self):
+#         return self.name
+# class SanBay(BaseModel):
+#     __tablename__ = 'sanbay'
+#     name = Column(String(50), nullable=False, unique=True)
+#     quocgia = Column(String(50), nullable=False)
+#     sanbaytrunggians = relationship('SanBayTrungGian', backref='sanbay', lazy=True)
+#     tuyenbays = relationship('TuyenBay', backref='sanbay', lazy=True)
+#     def __str__(self):
+#         return self.name
+
 class ChuyenBay(BaseModel):
     __tablename__= 'chuyenbay'
     name = Column(String(50), nullable=False)
@@ -69,6 +104,7 @@ class GiaVe(db.Model):
     hangghe_id = Column(Integer, ForeignKey('hangghe.id'), primary_key=True)
     tuyenbay_id = Column(Integer, ForeignKey('tuyenbay.id'), primary_key=True)
     giave = Column(Float,default=0)
+
 
 class HangGhe(BaseModel):
     __tablename__ = 'hangghe'
@@ -231,10 +267,10 @@ if __name__ == '__main__':
         mb6 = MayBay(name='Máy bay 6')
         db.session.add_all([mb1, mb2, mb3, mb4, mb5, mb6])
 
-        tb1 = TuyenBay(name=sb1.name + sb6.name, diemdi=sb1.name, diemden=sb6.name, quangduong=100000, sanbay_id=1)
-        tb2 = TuyenBay(name=sb1.name + sb2.name, diemdi=sb1.name, diemden=sb2.name, quangduong=90000, sanbay_id=1)
-        tb3 = TuyenBay(name=sb1.name + sb7.name, diemdi=sb2.name, diemden=sb7.name, quangduong=300000, sanbay_id=2)
-        tb4 = TuyenBay(name=sb1.name + sb10.name, diemdi=sb1.name, diemden=sb10.name, quangduong=50000, sanbay_id=1)
+        tb1 = TuyenBay(name=sb1.name + sb6.name, diemdi_id=1, diemden_id=6, quangduong=100000)
+        tb2 = TuyenBay(name=sb1.name + sb2.name, diemdi_id=1, diemden_id=2, quangduong=90000)
+        tb3 = TuyenBay(name=sb2.name + sb7.name, diemdi_id=2, diemden_id=7, quangduong=300000)
+        tb4 = TuyenBay(name=sb1.name + sb10.name, diemdi_id=1, diemden_id=10, quangduong=50000)
         db.session.add_all([tb1,tb2,tb3,tb4])
 
         hangghe1 = HangGhe(name='Hạng 1')
