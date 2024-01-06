@@ -3,7 +3,7 @@ from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
 from flask import redirect
 from app import app, db, Admin
-from app.models import User, Booking, RoleEnum, TuyenBay, User
+from app.models import  RoleEnum, TuyenBay, User, SanBay, SanBayTrungGian
 
 
 admin = Admin(app=app, name='HỆ THỐNG ĐẶT VÉ MÁY BAY', template_mode='bootstrap4')
@@ -22,7 +22,15 @@ class UserView(AuthenticatedAdmin):
     can_edit = False
     column_list = ('id', 'name', 'username', 'password', 'role')
 class TuyenBayView(AuthenticatedAdmin):
-    column_list = ('id','name', 'diemden','diemdi','quangduong')
+    column_list = ('id','name', 'diemdi','diemden','sanbay_id','quangduong','giave')
+    can_export = True
+    column_searchable_list = ['name']
+    column_filters = ['giave', 'name']
+    column_editable_list = [ 'giave']
+    details_modal = True
+    edit_modal = True
+class SanBayTrungGianView(AuthenticatedAdmin):
+    column_list = ('tuyenbay_id','sanbay_id', 'ghichu','time','')
     column_display_pk = True
     can_view_details = True
     can_export = True
@@ -30,8 +38,20 @@ class TuyenBayView(AuthenticatedAdmin):
     details_modal = True
     create_modal = True
     can_create = True
+
+class SanBayView(AuthenticatedAdmin):
+    column_list = ('id','name', 'quocgia')
+    column_display_pk = True
+    can_view_details = True
+    can_export = True
+    edit_modal = True
+    details_modal = True
+    create_modal = True
+    can_create = True
+
+
 class BookingView(AuthenticatedAdmin):
-    column_list = ('id', 'flight', 'user_id', 'user', 'time')
+    column_list = ('id', 'flight', 'user_id')
 
     column_display_pk = True
     can_view_details = True
@@ -54,6 +74,7 @@ class LogoutView(BaseView):
 
 
 admin.add_view(UserView(User, db.session))
-admin.add_view(BookingView(Booking, db.session))
 admin.add_view(TuyenBayView(TuyenBay, db.session))
+admin.add_view(SanBayTrungGianView(SanBayTrungGian, db.session))
+admin.add_view(SanBayView(SanBay, db.session))
 admin.add_view(LogoutView(name="Đăng xuất"))

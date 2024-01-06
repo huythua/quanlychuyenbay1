@@ -16,35 +16,40 @@ class HinhThucThanhToan(enum.Enum):
 class BaseModel(db.Model):
     __abstract__=True
     id = Column(Integer, primary_key=True, autoincrement=True)
-class SanBay(BaseModel):
-    __tablename__ = 'sanbay'
-    name = Column(String(50), nullable=False, unique=True)
-    quocgia = Column(String(50), nullable=False)
-    tuyenbay = relationship('TuyenBay', backref='sanbay',lazy=True)
-    sanbaytrunggian = relationship('SanBayTrungGian', backref='sanbay')
-
 class MayBay(BaseModel):
     __tablename__= 'maybay'
     name = Column(String(50), nullable=False)
     chuyenbay = relationship('ChuyenBay', backref='maybay', lazy=True)
+    def __str__(self):
+        return self.name
 class TuyenBay(BaseModel):
     __tablename__ = 'tuyenbay'
-    name = Column(String(50), nullable=False)
+    name = Column(String(50), nullable=False, unique= True )
     diemdi = Column(String(50), nullable=False)
     diemden = Column(String(50), nullable=False)
+    sanbay_id = Column(Integer, ForeignKey('sanbay.id'), nullable=False)
     quangduong = Column(String(50), nullable=False)
-    sanbay_id=Column(Integer, ForeignKey('sanbay.id'),nullable=False)
-    chuyenbay = relationship('ChuyenBay', backref='tuyenbay', lazy=True)
-    sanbaytrunggian = relationship('SanBayTrungGian',backref='tuyenbay', lazy=True)
+    chuyenbay = relationship('ChuyenBay', backref='tuyenbay', lazy=False)
+    sanbaytrunggians = relationship('SanBayTrungGian',backref='tuyenbay')
     giave = relationship('GiaVe', backref='tuyenbay', lazy=True)
+    def __str__(self):
+        return self.name
+class SanBay(BaseModel):
+    __tablename__ = 'sanbay'
+    name = Column(String(50), nullable=False, unique=True)
+    quocgia = Column(String(50), nullable=False)
+    sanbaytrunggians = relationship('SanBayTrungGian', backref='sanbay', lazy=True)
+    tuyenbays = relationship('TuyenBay', backref='sanbay', lazy=True)
     def __str__(self):
         return self.name
 class SanBayTrungGian(db.Model):
     __tablename__ = 'sanbaytrunggian'
     ghichu = Column(String(50), nullable=False)
     time = Column(String(20), default=10)
-    tuyenbay_id = Column(Integer, ForeignKey('tuyenbay.id'),primary_key=True, nullable=False)
-    sanbay_id = Column(Integer,ForeignKey('sanbay.id'),primary_key=True, nullable=False)
+    tuyenbay_id = Column(Integer, ForeignKey('tuyenbay.id'), primary_key=True, nullable=False)
+    sanbay_id = Column(Integer, ForeignKey('sanbay.id'), primary_key=True, nullable=False)
+    def __str__(self):
+        return self.sanbay.name
 class ChuyenBay(BaseModel):
     __tablename__= 'chuyenbay'
     name = Column(String(50), nullable=False)
@@ -70,11 +75,17 @@ class HangGhe(BaseModel):
     name = Column(String(50), nullable=False)
     ghe = relationship('Ghe', backref='hangghe')
     giave = relationship('GiaVe', backref='hangghe')
+    def __str__(self):
+
+        return self.name
 class Ghe(BaseModel):
     __tablename__ = 'ghe'
     name = Column(String(50), nullable=False)
     hangghe_id = Column(Integer, ForeignKey('hangghe.id'))
     soluongghe = relationship('SoLuongGhe', backref='ghe')
+    def __str__(self):
+
+        return self.name
 class SoLuongGhe(db.Model):
     __tablename__ = 'soluongghe'
     id = Column(Integer, primary_key=True)
@@ -82,6 +93,9 @@ class SoLuongGhe(db.Model):
     ghe_id = Column(Integer, ForeignKey('ghe.id'), nullable=False)
     chuyenbay_id = Column(Integer, ForeignKey('chuyenbay.id'), nullable=False)
     thongtinve = relationship('ThongTinVe', backref='soluongghe')
+    def __str__(self):
+
+        return self.name
 
 class ThongTinTaiKhoan(db.Model):
     __tablename__ = 'thongtintaikhoan'
@@ -93,6 +107,9 @@ class ThongTinTaiKhoan(db.Model):
     email = Column(String(50),nullable=False)
     user = relationship('User', uselist=False, back_populates='thongtintaikhoan')
     thongtinve = relationship('ThongTinVe', backref='thongtintaikhoan')
+    def __str__(self):
+
+        return self.name
 class User(BaseModel, UserMixin):
     __tablename__ = 'user'
     username = Column(String(50),nullable=False)
@@ -165,8 +182,6 @@ if __name__ == '__main__':
     with app.app_context():
         db.drop_all()
         db.create_all()
-
-
         taikhoan1 = User(username='phat', password=str(hashlib.md5("123".encode('utf-8')).hexdigest()),
                              role=RoleEnum.ADMIN)
         taikhoan2 = User(username='thua', password=str(hashlib.md5("123".encode('utf-8')).hexdigest()),
@@ -216,10 +231,10 @@ if __name__ == '__main__':
         mb6 = MayBay(name='Máy bay 6')
         db.session.add_all([mb1, mb2, mb3, mb4, mb5, mb6])
 
-        tb1 = TuyenBay(name='Quốc tế', diemdi=sb1.name, diemden=sb6.name, quangduong=100000, sanbay_id=1)
-        tb2 = TuyenBay(name='Trong nước', diemdi=sb1.name, diemden=sb2.name, quangduong=90000, sanbay_id=1)
-        tb3 = TuyenBay(name='Quốc tế', diemdi=sb2.name, diemden=sb7.name, quangduong=300000, sanbay_id=2)
-        tb4 = TuyenBay(name='Trong nước', diemdi=sb1.name, diemden=sb10.name, quangduong=50000, sanbay_id=1)
+        tb1 = TuyenBay(name=sb1.name + sb6.name, diemdi=sb1.name, diemden=sb6.name, quangduong=100000, sanbay_id=1)
+        tb2 = TuyenBay(name=sb1.name + sb2.name, diemdi=sb1.name, diemden=sb2.name, quangduong=90000, sanbay_id=1)
+        tb3 = TuyenBay(name=sb1.name + sb7.name, diemdi=sb2.name, diemden=sb7.name, quangduong=300000, sanbay_id=2)
+        tb4 = TuyenBay(name=sb1.name + sb10.name, diemdi=sb1.name, diemden=sb10.name, quangduong=50000, sanbay_id=1)
         db.session.add_all([tb1,tb2,tb3,tb4])
 
         hangghe1 = HangGhe(name='Hạng 1')
