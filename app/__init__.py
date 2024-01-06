@@ -9,6 +9,7 @@ app.secret_key = 'alsdkfja;ksdfjádfa;skdfa;lkdfj;laksdhj;alsdhg;'
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:%s@localhost/quanlychuyenbay?charset=utf8mb4" % quote(
     '123456')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
+app.config["PAGE_SIZE"] = 6
 
 db = SQLAlchemy(app=app)
 login_manager = LoginManager(app)

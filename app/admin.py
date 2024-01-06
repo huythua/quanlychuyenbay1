@@ -2,9 +2,8 @@ from flask_admin.contrib.sqla import ModelView
 from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
 from flask import redirect
-from app import app, db, admin
-from app.caesar_cipher import caesar_decrypt
-from app.models import User, Booking, RoleEnum, TuyenBay
+from app import app, db, Admin
+from app.models import User, Booking, RoleEnum, TuyenBay, User
 
 
 admin = Admin(app=app, name='HỆ THỐNG ĐẶT VÉ MÁY BAY', template_mode='bootstrap4')
@@ -17,15 +16,13 @@ class AuthenticatedAdmin(ModelView):
 
 class UserView(AuthenticatedAdmin):
     column_display_pk = True
-
     can_view_details = False
     edit_modal = False
     can_create = False
     can_edit = False
-
     column_list = ('id', 'name', 'username', 'password', 'role')
 class TuyenBayView(AuthenticatedAdmin):
-    column_list = ('id','name', 'diemden','diemdi','quangduong','chuyenbay')
+    column_list = ('id','name', 'diemden','diemdi','quangduong')
     column_display_pk = True
     can_view_details = True
     can_export = True

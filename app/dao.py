@@ -6,8 +6,18 @@ from flask_login import current_user
 
 def load_chuyen_bay():
     return Flight.query.all()
+def load_tuyenbay():
+    return TuyenBay.query.all()
 
+def load_chuyenbay():
+    return ChuyenBay.query.all()
 
+def count_chuyenbay():
+    return ChuyenBay.query.count()
+def load_giave():
+    return GiaVe.query.all()
+def load_hangghe():
+    return HangGhe.query.all()
 def add_booking(flight):
     booking = Booking()
     booking.user = current_user
@@ -22,6 +32,7 @@ def get_user_by_id(user_id):
     return User.query.get(user_id)
 
 
+
 def register_user(name, username, password):
     user = User()
     user.name = name
@@ -33,9 +44,9 @@ def register_user(name, username, password):
     return user
 
 
+
 def auth_user(username, password):
     password = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
-    username = caesar_encrypt(username, SHIFT_CAESAR)
 
-    return User.query.filter(User._username.__eq__(username),
+    return User.query.filter(User.username.__eq__(username.strip()),
                              User.password.__eq__(password)).first()
