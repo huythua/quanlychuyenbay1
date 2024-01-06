@@ -29,7 +29,6 @@ class TuyenBay(BaseModel):
     diemden = Column(String(50), nullable=False)
     sanbay_id = Column(Integer, ForeignKey('sanbay.id'), nullable=False)
     quangduong = Column(String(50), nullable=False)
-    chuyenbay = relationship('ChuyenBay', backref='tuyenbay', lazy=False)
     sanbaytrunggians = relationship('SanBayTrungGian',backref='tuyenbay')
     giave = relationship('GiaVe', backref='tuyenbay', lazy=True)
     def __str__(self):
@@ -62,6 +61,7 @@ class ChuyenBay(BaseModel):
     soluongghe2 = Column(Integer, default=0)
     soluonghe = relationship('SoLuongGhe',backref='chuyenbay')
     thongtinve = relationship('ThongTinVe', backref='chuyenbay')
+    tuyenbay = relationship('TuyenBay', backref='chuyenbay', lazy=False)
     def __str__(self):
         return self.name
 class GiaVe(db.Model):

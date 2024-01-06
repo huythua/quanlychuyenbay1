@@ -22,13 +22,25 @@ class UserView(AuthenticatedAdmin):
     can_edit = False
     column_list = ('id', 'name', 'username', 'password', 'role')
 class TuyenBayView(AuthenticatedAdmin):
-    column_list = ('id','name', 'diemdi','diemden','sanbay_id','quangduong','giave')
+    column_list = ('id','name', 'diemdi','diemden','sanbay_id','quangduong','giave', 'sanbaytrunggians')
     can_export = True
     column_searchable_list = ['name']
     column_filters = ['giave', 'name']
     column_editable_list = [ 'giave']
     details_modal = True
     edit_modal = True
+    form_create_rules = [
+        'name',
+        'diemdi',
+        'diemden',
+        'sanbay',
+        'quangduong',
+        'sanbaytrunggians',
+        'giave'
+    ]
+
+    # Tùy chỉnh trường chuyenbay để không hiển thị trong mẫu tạo mới
+    form_excluded_columns = ['chuyenbay']
 class SanBayTrungGianView(AuthenticatedAdmin):
     column_list = ('tuyenbay_id','sanbay_id', 'ghichu','time','')
     column_display_pk = True
