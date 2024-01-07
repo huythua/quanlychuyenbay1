@@ -3,9 +3,10 @@ from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
 from flask import redirect
 from app import app, db, Admin
-from app.models import  RoleEnum, TuyenBay, User, SanBay, SanBayTrungGian,HangGhe,GiaVe
-
-
+from app.models import  RoleEnum, TuyenBay, User, SanBay, SanBayTrungGian,HangGhe,GiaVe, ChuyenBay, HangGheChuyenBay, Ghe, ThongTinVe,HoaDon
+from sqlalchemy import event
+from sqlalchemy.orm import Session
+from sqlalchemy.event import listens_for
 
 admin = Admin(app=app, name='HỆ THỐNG ĐẶT VÉ MÁY BAY', template_mode='bootstrap4')
 
@@ -33,6 +34,7 @@ class TuyenBayView(AuthenticatedAdmin):
     column_editable_list = [ 'giave', 'sanbaytrunggians']
     details_modal = True
     edit_modal = True
+    can_view_details = True
     form_create_rules = [
         'name',
         'diemdi',
@@ -48,7 +50,7 @@ class TuyenBayView(AuthenticatedAdmin):
 
 
 class SanBayTrungGianView(AuthenticatedAdmin):
-    column_list = ('tuyenbay_id','sanbay_id', 'ghichu','time','')
+    column_list = ('tuyenbay_id','tuyenbay','sanbay', 'ghichu','time')
     column_display_pk = True
     can_view_details = True
     can_export = True
@@ -56,7 +58,25 @@ class SanBayTrungGianView(AuthenticatedAdmin):
     details_modal = True
     create_modal = True
     can_create = True
-
+class ChuyenBayView(AuthenticatedAdmin):
+    column_list = ('id','name','image','tinhtrang','ngaybay','tuyenbay','maybay',)
+    column_display_pk = True
+    can_view_details = True
+    can_export = True
+    edit_modal = True
+    details_modal = True
+    create_modal = True
+    can_create = True
+    column_editable_list = ['tinhtrang']
+    form_create_rules = [
+        'tuyenbay',
+        'name',
+        'ngaybay',
+        'image',
+        'maybay'
+    ]
+    # Tùy chỉnh trường chuyenbay để không hiển thị trong mẫu tạo mới
+    form_excluded_columns = ['thongtinve', 'hangghechuyenbay', 'ghe', 'tinhtrang']
 class SanBayView(AuthenticatedAdmin):
     column_list = ('id','name', 'quocgia')
     column_display_pk = True
@@ -66,9 +86,39 @@ class SanBayView(AuthenticatedAdmin):
     details_modal = True
     create_modal = True
     can_create = True
+class HangGheChuyenBayView(AuthenticatedAdmin):
+    column_list = ('chuyenbay_id','chuyenbay','hangghe', 'soluongghe')
+    column_display_pk = True
+    can_view_details = True
+    can_export = True
+    edit_modal = True
+    details_modal = True
+    create_modal = True
+    can_create = True
+    # def on_model_change(self, form, model, is_created):
+    #     soluongghe = model.soluongghe
+    #
+    #     # Tạo các ghế tương ứng với soluongghe
+    #     for h in range(soluongghe):
+    #         new_ghe = Ghe(name= str(model.hangghe_id)+'0'+str(h), hangghe_id=model.hangghe_id, chuyenbay_id=model.chuyenbay_id,
+    #                      tinhtrang=True)
+    #         db.session.add(new_ghe)
 
+    @event.listens_for(HangGheChuyenBay, 'after_insert')
+    def create_ghe_after_insert(mapper, connection, target):
+        session = Session(bind=connection)
+
+        hangghe_id = target.hangghe_id
+        chuyenbay_id = target.chuyenbay_id
+        soluongghe = target.soluongghe
+
+        for h in range(soluongghe):
+            new_ghe = Ghe(name= str(hangghe_id)+'0'+str(h), hangghe_id=hangghe_id, chuyenbay_id=chuyenbay_id, tinhtrang=True)
+            session.add(new_ghe)
+
+        session.commit()
 class GiaVeView(AuthenticatedAdmin):
-    column_list = ('hangghe_id', 'tuyenbay_id', 'giave')
+    column_list = ('hangghe', 'tuyenbay_id','tuyenbay', 'giave')
     can_view_details = True
     can_export = True
     edit_modal = True
@@ -76,7 +126,22 @@ class GiaVeView(AuthenticatedAdmin):
     create_modal = True
     can_create = True
 
-
+class HangGheView(AuthenticatedAdmin):
+    column_list = ('id', 'name')
+    can_view_details = True
+    can_export = True
+    edit_modal = True
+    details_modal = True
+    create_modal = True
+    can_create = True
+class ThongTinVeView(AuthenticatedAdmin):
+    column_list = ('id', 'thongtintaikhoan','chuyenbay','ghe')
+    can_view_details = True
+    can_export = True
+    edit_modal = True
+    details_modal = True
+    create_modal = True
+    can_create = True
 class LogoutView(BaseView):
     @expose('/')
     def index(self):
@@ -93,5 +158,8 @@ admin.add_view(TuyenBayView(TuyenBay, db.session))
 admin.add_view(SanBayTrungGianView(SanBayTrungGian, db.session))
 admin.add_view(SanBayView(SanBay, db.session))
 admin.add_view(GiaVeView(GiaVe, db.session))
-
+admin.add_view(HangGheView(HangGhe, db.session))
+admin.add_view(ChuyenBayView(ChuyenBay, db.session))
+admin.add_view(HangGheChuyenBayView(HangGheChuyenBay, db.session))
+admin.add_view(ThongTinVeView(ThongTinVe, db.session))
 admin.add_view(LogoutView(name="Đăng xuất"))

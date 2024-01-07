@@ -5,7 +5,8 @@ from app import app, db
 from flask_login import UserMixin
 import enum
 import hashlib
-Base = declarative_base()
+from sqlalchemy.exc import IntegrityError
+
 class RoleEnum(enum.Enum):
     ADMIN = "admin"
     PASSENGER = "passenger"
@@ -61,29 +62,6 @@ class SanBayTrungGian(db.Model):
 
     def __str__(self):
         return f"{self.sanbay.name} "
-
-
-
-# class TuyenBay(BaseModel):
-#     __tablename__ = 'tuyenbay'
-#     name = Column(String(50), nullable=False, unique= True )
-#     diemdi = Column(String(50), nullable=False)
-#     diemden = Column(String(50), nullable=False)
-#     sanbay_id = Column(Integer, ForeignKey('sanbay.id'), nullable=False)
-#     quangduong = Column(String(50), nullable=False)
-#     sanbaytrunggians = relationship('SanBayTrungGian',backref='tuyenbay')
-#     giave = relationship('GiaVe', backref='tuyenbay', lazy=True)
-#     def __str__(self):
-#         return self.name
-# class SanBay(BaseModel):
-#     __tablename__ = 'sanbay'
-#     name = Column(String(50), nullable=False, unique=True)
-#     quocgia = Column(String(50), nullable=False)
-#     sanbaytrunggians = relationship('SanBayTrungGian', backref='sanbay', lazy=True)
-#     tuyenbays = relationship('TuyenBay', backref='sanbay', lazy=True)
-#     def __str__(self):
-#         return self.name
-
 class ChuyenBay(BaseModel):
     __tablename__= 'chuyenbay'
     name = Column(String(50), nullable=False)
@@ -92,11 +70,10 @@ class ChuyenBay(BaseModel):
     ngaybay = Column(DateTime, default=datetime.now())
     tuyenbay_id= Column(Integer, ForeignKey('tuyenbay.id'),nullable=False)
     maybay_id = Column(Integer, ForeignKey('maybay.id'), nullable=False)
-    soluongghe1 = Column(Integer,default=0)
-    soluongghe2 = Column(Integer, default=0)
-    soluonghe = relationship('SoLuongGhe',backref='chuyenbay')
-    thongtinve = relationship('ThongTinVe', backref='chuyenbay')
+
     tuyenbay = relationship('TuyenBay', backref='chuyenbay', lazy=False)
+    hangghechuyenbay = relationship('HangGheChuyenBay', backref='chuyenbay', lazy=False)
+    ghe = relationship('Ghe', backref='chuyenbay', lazy=False)
     def __str__(self):
         return self.name
 class GiaVe(db.Model):
@@ -104,34 +81,37 @@ class GiaVe(db.Model):
     hangghe_id = Column(Integer, ForeignKey('hangghe.id'), primary_key=True)
     tuyenbay_id = Column(Integer, ForeignKey('tuyenbay.id'), primary_key=True)
     giave = Column(Float,default=0)
-
-
 class HangGhe(BaseModel):
     __tablename__ = 'hangghe'
     name = Column(String(50), nullable=False)
-    ghe = relationship('Ghe', backref='hangghe')
+    hangghechuyenbay = relationship('HangGheChuyenBay', backref='hangghe')
     giave = relationship('GiaVe', backref='hangghe')
+    ghe = relationship('Ghe', backref='hangghe')
     def __str__(self):
-
         return self.name
+class HangGheChuyenBay(db.Model):
+    __tablename__ = 'hangghechuyenbay'
+    hangghe_id = Column(Integer, ForeignKey('hangghe.id'), primary_key=True, nullable=False)
+    chuyenbay_id = Column(Integer, ForeignKey('chuyenbay.id'), primary_key=True, nullable=False)
+    soluongghe = Column(Integer, nullable=False)
+    def __str__(self):
+        return self.hangghe_id.name
 class Ghe(BaseModel):
     __tablename__ = 'ghe'
     name = Column(String(50), nullable=False)
-    hangghe_id = Column(Integer, ForeignKey('hangghe.id'))
-    soluongghe = relationship('SoLuongGhe', backref='ghe')
-    def __str__(self):
-
-        return self.name
-class SoLuongGhe(db.Model):
-    __tablename__ = 'soluongghe'
-    id = Column(Integer, primary_key=True)
-    tinhtrang = Column(Boolean, default=False)
-    ghe_id = Column(Integer, ForeignKey('ghe.id'), nullable=False)
+    hangghe_id = Column(Integer, ForeignKey('hangghe.id'), nullable=False)
     chuyenbay_id = Column(Integer, ForeignKey('chuyenbay.id'), nullable=False)
-    thongtinve = relationship('ThongTinVe', backref='soluongghe')
+    thongtinve = relationship('ThongTinVe', backref='ghe', lazy=True)
+    tinhtrang = Column(Boolean, nullable=False)
     def __str__(self):
-
         return self.name
+class ThongTinVe(BaseModel):
+    __tablename__= 'thongtinve'
+    thongtintaikhoan_id = Column(Integer, ForeignKey('thongtintaikhoan.user_id'), nullable=False)
+    chuyenbay_id = Column(Integer, ForeignKey('chuyenbay.id'), nullable=False)
+    ghe_id = Column(Integer, ForeignKey('ghe.id'), nullable=False)
+    hoadon_id = relationship('HoaDon', backref='thongtinve')
+    chuyenbay = relationship('ChuyenBay', backref='thongtinve')
 
 class ThongTinTaiKhoan(db.Model):
     __tablename__ = 'thongtintaikhoan'
@@ -155,59 +135,24 @@ class User(BaseModel, UserMixin):
     role = Column(Enum(RoleEnum), nullable=False)
     def __str__(self):
         return self.name
-class ThongTinVe(BaseModel):
-    __tablename__= 'thongtinve'
-    thongtintaikhoan_id = Column(Integer, ForeignKey('thongtintaikhoan.user_id'), nullable=False)
-    chuyenbay_id = Column(Integer, ForeignKey('chuyenbay.id'), nullable=False)
-    soluongghe_id = Column(Integer, ForeignKey('soluongghe.id'), nullable=False)
-    hoadon_id = relationship('HoaDon', backref='thongtinve')
+
 class HoaDon(BaseModel):
     __tablename__ = 'HoaDon'
     tongtien = Column(Float, default=0)
     hinhthucthanhtoan= Column(Enum(HinhThucThanhToan),nullable=False )
     ve_id = Column(Integer,ForeignKey('thongtinve.id'), nullable= False)
+def addghe(hangghechuyenbay):
+    try:
+        hangghe_id= hangghechuyenbay.hangghe_id
+        chuyenbay_id= hangghechuyenbay.chuyenbay_id
+        soluongghe= hangghechuyenbay.soluongghe
 
-
-
-
-
-class Flight(db.Model):
-    __tablename__ = 'flight'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), nullable=False)
-    price = Column(Integer, nullable=False)
-    image = Column(String(50), nullable=False)
-
-    def __str__(self):
-        return self.name
-
-
-class Booking(db.Model):
-    __tablename__ = 'booking'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    user = relationship("User", backref='bookings')
-
-    flight_id = Column(Integer, ForeignKey('flight.id'), nullable=False)
-    flight = relationship("Flight")
-
-    time = Column(DateTime, default=datetime.now())
-
-
-
-
-class User1(db.Model, UserMixin):
-    __tablename__ = 'user1'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    _name = Column(String(50), nullable=False)
-    _username = Column(String(50), nullable=False, unique=True)
-    password = Column(String(200), nullable=False)
-    role = Column(Enum(RoleEnum), nullable=False)
-
+        for h in range(soluongghe):
+            ghe = Ghe(name= str(hangghe_id)+'0'+str(h), hangghe_id=hangghe_id,chuyenbay_id=chuyenbay_id, tinhtrang=True)
+            db.session.add(ghe)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
 
 
 
@@ -277,26 +222,26 @@ if __name__ == '__main__':
         hangghe2 = HangGhe(name='Hạng 2')
         db.session.add_all([hangghe1, hangghe2])
 
-        g1 = Ghe(name='001', hangghe_id=1)
-        g2 = Ghe(name='002', hangghe_id=1)
-        g3 = Ghe(name='003', hangghe_id=1)
-        g4 = Ghe(name='004', hangghe_id=1)
-        g5 = Ghe(name='005', hangghe_id=1)
-        g6 = Ghe(name='006', hangghe_id=1)
-        g7 = Ghe(name='007', hangghe_id=1)
-        g8 = Ghe(name='008', hangghe_id=1)
-        g9 = Ghe(name='009', hangghe_id=1)
-        g10 = Ghe(name='010', hangghe_id=1)
-        g11 = Ghe(name='011', hangghe_id=2)
-        g12 = Ghe(name='012', hangghe_id=2)
-        g13 = Ghe(name='013', hangghe_id=2)
-        g14 = Ghe(name='014', hangghe_id=2)
-        g15 = Ghe(name='015', hangghe_id=2)
-        g16 = Ghe(name='016', hangghe_id=2)
-        g17 = Ghe(name='017', hangghe_id=2)
-        g18 = Ghe(name='018', hangghe_id=2)
-        g19 = Ghe(name='019', hangghe_id=2)
-        db.session.add_all([g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14, g15, g16, g17, g18, g19])
+        # g1 = Ghe(name='001', hangghe_id=1)
+        # g2 = Ghe(name='002', hangghe_id=1)
+        # g3 = Ghe(name='003', hangghe_id=1)
+        # g4 = Ghe(name='004', hangghe_id=1)
+        # g5 = Ghe(name='005', hangghe_id=1)
+        # g6 = Ghe(name='006', hangghe_id=1)
+        # g7 = Ghe(name='007', hangghe_id=1)
+        # g8 = Ghe(name='008', hangghe_id=1)
+        # g9 = Ghe(name='009', hangghe_id=1)
+        # g10 = Ghe(name='010', hangghe_id=1)
+        # g11 = Ghe(name='011', hangghe_id=2)
+        # g12 = Ghe(name='012', hangghe_id=2)
+        # g13 = Ghe(name='013', hangghe_id=2)
+        # g14 = Ghe(name='014', hangghe_id=2)
+        # g15 = Ghe(name='015', hangghe_id=2)
+        # g16 = Ghe(name='016', hangghe_id=2)
+        # g17 = Ghe(name='017', hangghe_id=2)
+        # g18 = Ghe(name='018', hangghe_id=2)
+        # g19 = Ghe(name='019', hangghe_id=2)
+        # db.session.add_all([g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14, g15, g16, g17, g18, g19])
 
         gv1 = GiaVe(giave=2000000, hangghe_id=1, tuyenbay_id=1)
         gv2 = GiaVe(giave=3000000, hangghe_id=2, tuyenbay_id=1)
@@ -311,46 +256,50 @@ if __name__ == '__main__':
         ngay=datetime(2024,2,12,12,40,00)
         ngay1 = datetime(2024, 2, 2, 10, 00, 00)
         ngay2 = datetime(2024, 2, 22, 10, 00, 00)
-        cb1 = ChuyenBay(tuyenbay_id=1, maybay_id=1, soluongghe1= 5, soluongghe2= 4,ngaybay=ngay, tinhtrang=True,
-                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Không khứ hồi')
-        cb2 = ChuyenBay(tuyenbay_id=2, maybay_id=2, soluongghe1=4, soluongghe2= 6,ngaybay=ngay, tinhtrang=True,
-                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Không khứ hồi')
-        cb3 = ChuyenBay(tuyenbay_id=3, maybay_id=3, soluongghe1=2, soluongghe2=2, ngaybay=ngay1, tinhtrang=True,
-                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Không khứ hồi')
-        cb4 = ChuyenBay(tuyenbay_id=4, maybay_id=4, soluongghe1=4, soluongghe2=4, ngaybay=ngay1, tinhtrang=True,
-                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Không khứ hồi')
-        cb5 = ChuyenBay(tuyenbay_id=1, maybay_id=5, soluongghe1=6, soluongghe2=6, ngaybay=ngay2, tinhtrang=True,
-                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Không khứ hồi')
-        cb6 = ChuyenBay(tuyenbay_id=2, maybay_id=6, soluongghe1=4, soluongghe2=4, ngaybay=ngay2, tinhtrang=True,
-                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Không khứ hồi')
-        cb7 = ChuyenBay(tuyenbay_id=3, maybay_id=1, soluongghe1=4, soluongghe2=4, ngaybay=ngay2, tinhtrang=True,
-                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Không khứ hồi')
-        cb8 = ChuyenBay(tuyenbay_id=4, maybay_id=4, soluongghe1=4, soluongghe2=4, ngaybay=ngay2, tinhtrang=True,
-                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Không khứ hồi')
-        db.session.add_all([cb1,cb2,cb3,cb4,cb5,cb6,cb7,cb8])
+        cb1 = ChuyenBay(tuyenbay_id=1, maybay_id=1, ngaybay=ngay, tinhtrang=True,
+                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Chuyến bay 1')
+        cb2 = ChuyenBay(tuyenbay_id=2, maybay_id=2,ngaybay=ngay, tinhtrang=True,
+                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Chuyến bay 2')
+        cb3 = ChuyenBay(tuyenbay_id=3, maybay_id=3, ngaybay=ngay1, tinhtrang=True,
+                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Chuyến bay 3')
+        cb4 = ChuyenBay(tuyenbay_id=4, maybay_id=4, ngaybay=ngay1, tinhtrang=True,
+                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Chuyến bay 4')
+        cb5 = ChuyenBay(tuyenbay_id=1, maybay_id=5, ngaybay=ngay2, tinhtrang=True,
+                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Chuyến bay 5')
+        cb6 = ChuyenBay(tuyenbay_id=2, maybay_id=6, ngaybay=ngay2, tinhtrang=True,
+                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Chuyến bay 6')
+        cb7 = ChuyenBay(tuyenbay_id=3, maybay_id=1, ngaybay=ngay2, tinhtrang=True,
+                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Chuyến bay 7')
+        cb8 = ChuyenBay(tuyenbay_id=4, maybay_id=4, ngaybay=ngay2, tinhtrang=True,
+                        image="https://wallpapercave.com/wp/9aungfd.jpg", name='Chuyến bay 8')
+        db.session.add_all([cb1, cb2, cb3, cb4, cb5, cb6, cb7, cb8])
 
-        ghe1cb1= SoLuongGhe(ghe_id=1, chuyenbay_id=1)
-        ghe2cb1 = SoLuongGhe(ghe_id=2, chuyenbay_id=1)
-        ghe3cb1 = SoLuongGhe(ghe_id=3, chuyenbay_id=1)
-        ghe4cb1 = SoLuongGhe(ghe_id=4, chuyenbay_id=1)
-        ghe5cb1 = SoLuongGhe(ghe_id=5, chuyenbay_id=1)
-        ghe6cb1 = SoLuongGhe(ghe_id=11, chuyenbay_id=2)
-        ghe7cb1 = SoLuongGhe(ghe_id=12, chuyenbay_id=2)
-        ghe8cb1 = SoLuongGhe(ghe_id=13, chuyenbay_id=2)
-        ghe9cb1 = SoLuongGhe(ghe_id=14, chuyenbay_id=2)
-        db.session.add_all([ghe1cb1, ghe2cb1,ghe3cb1, ghe4cb1, ghe5cb1, ghe6cb1,ghe7cb1, ghe8cb1,ghe9cb1])
 
-        ghe1cb2 = SoLuongGhe(ghe_id=1, chuyenbay_id=1)
-        ghe2cb2 = SoLuongGhe(ghe_id=2, chuyenbay_id=1)
-        ghe3cb2 = SoLuongGhe(ghe_id=3, chuyenbay_id=1)
-        ghe4cb2 = SoLuongGhe(ghe_id=4, chuyenbay_id=1)
-        ghe5cb2 = SoLuongGhe(ghe_id=11, chuyenbay_id=2)
-        ghe6cb2 = SoLuongGhe(ghe_id=12, chuyenbay_id=2)
-        ghe7cb2 = SoLuongGhe(ghe_id=13, chuyenbay_id=2)
-        ghe8cb2 = SoLuongGhe(ghe_id=14, chuyenbay_id=2)
-        db.session.add_all([ghe1cb2, ghe2cb2, ghe3cb2, ghe4cb2, ghe5cb2, ghe6cb2, ghe7cb2, ghe8cb2, ghe8cb2])
+        h1= HangGheChuyenBay(hangghe_id=1, chuyenbay_id=1, soluongghe=5)
+        h2= HangGheChuyenBay(hangghe_id=2, chuyenbay_id=1, soluongghe=5)
+        h3= HangGheChuyenBay(hangghe_id=1, chuyenbay_id=2, soluongghe=6)
+        h4= HangGheChuyenBay(hangghe_id=2, chuyenbay_id=2, soluongghe=6)
+        h5 = HangGheChuyenBay(hangghe_id=1, chuyenbay_id=3, soluongghe=4)
+        h6 = HangGheChuyenBay(hangghe_id=2, chuyenbay_id=3, soluongghe=4)
+        h7 = HangGheChuyenBay(hangghe_id=1, chuyenbay_id=4, soluongghe=5)
+        h8 = HangGheChuyenBay(hangghe_id=2, chuyenbay_id=4, soluongghe=5)
+        h9 = HangGheChuyenBay(hangghe_id=1, chuyenbay_id=5, soluongghe=7)
+        h10 = HangGheChuyenBay(hangghe_id=2, chuyenbay_id=5, soluongghe=7)
+        h11 = HangGheChuyenBay(hangghe_id=1, chuyenbay_id=6, soluongghe=6)
+        h12 = HangGheChuyenBay(hangghe_id=2, chuyenbay_id=6, soluongghe=6)
+        db.session.add_all([h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12])
+        addghe(h1)
+        addghe(h2)
+        addghe(h3)
+        addghe(h4)
+        addghe(h5)
+        addghe(h6)
+        addghe(h7)
+        addghe(h8)
+        addghe(h9)
+        addghe(h10)
+        addghe(h11)
+        addghe(h12)
 
-        # kh1 = TaiKhoanKH(name='Trần Huy Thừa', diachi='Tây Ninh', cmnd='072203003612',sdt='0368141334', email='huythua0@gmail.com')
-        # kh2 = TaiKhoanKH(name='Trần Huy Thừa', diachi='Tây Ninh', cmnd='072203003612', sdt='0368141334',
-        #                  email='huythua0@gmail.com')
+
         db.session.commit()

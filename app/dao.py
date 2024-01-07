@@ -2,10 +2,9 @@ import json, os
 from app.models import *
 import hashlib
 from flask_login import current_user
+from sqlalchemy import func
 
 
-def load_chuyen_bay():
-    return Flight.query.all()
 def load_tuyenbay():
     return TuyenBay.query.all()
 
@@ -18,21 +17,9 @@ def load_giave():
     return GiaVe.query.all()
 def load_hangghe():
     return HangGhe.query.all()
-def add_booking(flight):
-    booking = Booking()
-    booking.user = current_user
-    booking.flight = flight
-    db.session.add(booking)
-    db.session.commit()
-
-    return booking
-
 
 def get_user_by_id(user_id):
     return User.query.get(user_id)
-
-
-
 def register_user(name, username, password):
     user = User()
     user.name = name
@@ -50,3 +37,10 @@ def auth_user(username, password):
 
     return User.query.filter(User.username.__eq__(username.strip()),
                              User.password.__eq__(password)).first()
+def thongketheothang(thang):
+    query= (db.session.query(
+            ThongTinVe.tuyenbay_id,
+            func.sum(ThongTinVe.giave).label('doanhthu')).filter(func.strftime('%Y-%m', ThongTinVe.ngaydat) == thang)
+            .group_by(ThongTinVe.tuyenbay_id)
+            .all()
+            )
