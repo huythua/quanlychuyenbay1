@@ -1,8 +1,8 @@
 from flask_admin.contrib.sqla import ModelView
-from flask_admin import Admin, BaseView, expose
+from flask_admin import Admin, BaseView, expose, AdminIndexView
 from flask_login import current_user, logout_user
 from flask import redirect
-from app import app, db, Admin
+from app import app, db, Admin, dao
 from app.models import  RoleEnum, TuyenBay, User, SanBay, SanBayTrungGian,HangGhe,GiaVe, ChuyenBay, HangGheChuyenBay, Ghe, ThongTinVe,HoaDon
 from sqlalchemy import event
 from sqlalchemy.orm import Session
@@ -156,7 +156,10 @@ class LogoutView(BaseView):
 
     def is_accessible(self):
         return current_user.is_authenticated
-
+class MyAdmin(AuthenticatedAdmin):
+    @expose('/')
+    def index(self):
+        return self.render('admin/index.html', stats=dao.count_chuyenbay())
 
 admin.add_view(UserView(User, db.session))
 admin.add_view(TuyenBayView(TuyenBay, db.session))

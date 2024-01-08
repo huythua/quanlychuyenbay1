@@ -6,6 +6,7 @@ import math
 from app.models import ThongTinTaiKhoan, User
 @app.route('/')
 def index():
+
     tuyenbay = dao.load_tuyenbay()
     chuyenbay= dao.load_chuyenbay()
     num= dao.count_chuyenbay()
@@ -34,9 +35,7 @@ def admin_login():
     user = dao.auth_user(username=username, password=password)
     if user:
         login_user(user=user)
-
     return redirect('/admin')
-
 @app.route('/register', methods=['get', 'post'])
 def register_user():
     err_msg = None

@@ -12,8 +12,6 @@ def load_chuyenbay():
     return ChuyenBay.query.all()
 def load_thongtintaikhoan():
     return ThongTinTaiKhoan.query.all()
-def count_chuyenbay():
-    return ChuyenBay.query.count()
 def load_giave():
     return GiaVe.query.all()
 def load_hangghe():
@@ -42,3 +40,9 @@ def thongketheothang(thang):
             .group_by(ThongTinVe.tuyenbay_id)
             .all()
             )
+def tuyenbay_stats():
+   return TuyenBay.query.join(ChuyenBay,ChuyenBay.tuyenbay_id.__eq__(TuyenBay.id))\
+                        .add_column(func.count(ChuyenBay.id))\
+                        .group_by(TuyenBay.id, TuyenBay.name).all()
+def count_chuyenbay():
+    return ChuyenBay.query.count()
