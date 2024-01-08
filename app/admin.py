@@ -6,7 +6,7 @@ from app import app, db, Admin
 from app.models import  RoleEnum, TuyenBay, User, SanBay, SanBayTrungGian,HangGhe,GiaVe, ChuyenBay, HangGheChuyenBay, Ghe, ThongTinVe,HoaDon
 from sqlalchemy import event
 from sqlalchemy.orm import Session
-from sqlalchemy.event import listens_for
+
 
 admin = Admin(app=app, name='HỆ THỐNG ĐẶT VÉ MÁY BAY', template_mode='bootstrap4')
 
@@ -107,18 +107,15 @@ class HangGheChuyenBayView(AuthenticatedAdmin):
     @event.listens_for(HangGheChuyenBay, 'after_insert')
     def create_ghe_after_insert(mapper, connection, target):
         session = Session(bind=connection)
-
         hangghe_id = target.hangghe_id
         chuyenbay_id = target.chuyenbay_id
         soluongghe = target.soluongghe
-
         for h in range(soluongghe):
             new_ghe = Ghe(name= str(hangghe_id)+'0'+str(h), hangghe_id=hangghe_id, chuyenbay_id=chuyenbay_id, tinhtrang=True)
             session.add(new_ghe)
-
         session.commit()
 class GiaVeView(AuthenticatedAdmin):
-    column_list = ('hangghe', 'tuyenbay_id','tuyenbay', 'giave')
+    column_list = ('hangghe', 'tuyenbay_id','tuyenbay', 'giave','')
     can_view_details = True
     can_export = True
     edit_modal = True
@@ -135,7 +132,15 @@ class HangGheView(AuthenticatedAdmin):
     create_modal = True
     can_create = True
 class ThongTinVeView(AuthenticatedAdmin):
-    column_list = ('id', 'thongtintaikhoan','chuyenbay','ghe')
+    column_list = ('id', 'thongtintaikhoan','chuyenbay','chuyenbay.ngaybay','chuyenbay.tuyenbay_id','ghe.hangghe_id','ghe')
+    can_view_details = True
+    can_export = True
+    edit_modal = True
+    details_modal = True
+    create_modal = True
+    can_create = True
+class HoaDonView(AuthenticatedAdmin):
+    column_list = ('id', 'ngaythanhtoan','tongtien')
     can_view_details = True
     can_export = True
     edit_modal = True
@@ -162,4 +167,5 @@ admin.add_view(HangGheView(HangGhe, db.session))
 admin.add_view(ChuyenBayView(ChuyenBay, db.session))
 admin.add_view(HangGheChuyenBayView(HangGheChuyenBay, db.session))
 admin.add_view(ThongTinVeView(ThongTinVe, db.session))
+admin.add_view(HoaDonView(HoaDon, db.session))
 admin.add_view(LogoutView(name="Đăng xuất"))

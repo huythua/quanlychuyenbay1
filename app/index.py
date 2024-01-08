@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import UserMixin, login_user, login_required, logout_user, current_user
-from app import dao, app, login_manager
+from app import dao, app, login_manager,db
 from app.models import RoleEnum
 import math
+from app.models import ThongTinTaiKhoan, User
 @app.route('/')
 def index():
     tuyenbay = dao.load_tuyenbay()
@@ -36,25 +37,56 @@ def admin_login():
 
     return redirect('/admin')
 
-# @app.route('/register', methods=['GET', 'POST'])
-# def register():
-#     form = RegistrationForm()
-#     if form.validate_on_submit():
-#         name = form.name.data
-#         username = form.username.data
-#         password = form.password.data
-#
-#         from sqlalchemy.exc import IntegrityError
-#         try:
-#             user = dao.register_user(name=name, username=username, password=password)
-#             login_user(user)
-#             return redirect(url_for('home'))
-#         except IntegrityError:
-#             flash('Username already exists.', 'danger')
-#
-#     return render_template('register.html', form=form)
-#
+@app.route('/register', methods=['get', 'post'])
+def register_user():
+    err_msg = None
 
+    if request.method.__eq__('POST'):
+        password = request.form.get('password')
+        confirm = request.form.get('confirm')
+
+        if password.__eq__(confirm):
+            try:
+                dao.add_user(
+                             username=request.form.get('username'),
+                             password=password)
+
+            except Exception as ex:
+                print(str(ex))
+                err_msg = 'Hệ thống đang bị lỗi!'
+            else:
+                return redirect('/login')
+        else:
+            err_msg = 'Mật khẩu KHÔNG khớp!'
+
+    return render_template('/register.html', err_msg=err_msg)
+@app.route('/thongtin', methods=['get', 'post'])
+def add_thongtin():
+    if request.method == 'POST':
+        user_id = current_user.id
+        name = request.form['name']
+        diachi = request.form['diachi']
+        cmnd = request.form['cmnd']
+        sdt = request.form['sdt']
+        email = request.form['mail']
+
+        # Kiểm tra xem user_id đã có trong bảng thongtintaikhoan hay chưa
+        existing_thongtin = ThongTinTaiKhoan.query.filter_by(user_id=user_id).first()
+
+        if existing_thongtin:
+            # Nếu tồn tại, thực hiện cập nhật thông tin
+            existing_thongtin.name = name
+            existing_thongtin.diachi = diachi
+            existing_thongtin.cmnd = cmnd
+            existing_thongtin.sdt = sdt
+            existing_thongtin.email = email
+        else:
+            user_id = current_user.id
+            new_user_info = ThongTinTaiKhoan(name=name, diachi=diachi, cmnd=cmnd, sdt=sdt, email=email, user_id=user_id)
+            db.session.add(new_user_info)
+        db.session.commit()
+        return redirect('/')
+    return render_template('thongtin.html')
 @app.route('/logout')
 def process_user_logout():
     logout_user()
@@ -62,6 +94,12 @@ def process_user_logout():
 @login_manager.user_loader
 def get_user(user_id):
     return dao.get_user_by_id(user_id)
+@app.context_processor
+def common_response():
+    return {
+        'chuyenbay': dao.load_chuyenbay(),
+        'tuyenbay':dao.load_tuyenbay()
+    }
 if __name__ == '__main__':
     from app import admin
 

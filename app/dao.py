@@ -3,14 +3,15 @@ from app.models import *
 import hashlib
 from flask_login import current_user
 from sqlalchemy import func
-
+import  cloudinary.uploader
 
 def load_tuyenbay():
     return TuyenBay.query.all()
 
 def load_chuyenbay():
     return ChuyenBay.query.all()
-
+def load_thongtintaikhoan():
+    return ThongTinTaiKhoan.query.all()
 def count_chuyenbay():
     return ChuyenBay.query.count()
 def load_giave():
@@ -20,18 +21,15 @@ def load_hangghe():
 
 def get_user_by_id(user_id):
     return User.query.get(user_id)
-def register_user(name, username, password):
-    user = User()
-    user.name = name
-    user.username = username
-    user.password = str(hashlib.md5(password.encode('utf-8')).hexdigest())
-    user.role = RoleEnum.PASSENGER
-    db.session.add(user)
+def add_user(username, password):
+    password = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
+    u = User( username=username, password=password)
+    db.session.add(u)
     db.session.commit()
-    return user
-
-
-
+def add_thongtin(user_id,name,diachi,sdt,mail,cmnd):
+    info = ThongTinTaiKhoan(user_id=user_id,name=name, diachi=diachi, sdt=sdt, email=mail, cmnd=cmnd)
+    db.session.add(info)
+    db.session.commit()
 def auth_user(username, password):
     password = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
 

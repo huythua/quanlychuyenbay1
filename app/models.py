@@ -32,7 +32,6 @@ class TuyenBay(db.Model):
     diemdi_id = Column(Integer, ForeignKey('sanbay.id'), nullable=False)
     diemden_id = Column(Integer, ForeignKey('sanbay.id'), nullable=False)
     quangduong = Column(String(50), nullable=False)
-
     diemdi = relationship('SanBay', foreign_keys=[diemdi_id], back_populates='tuyenbays_di', lazy=True)
     diemden = relationship('SanBay', foreign_keys=[diemden_id], back_populates='tuyenbays_den', lazy=True)
     sanbaytrunggians = relationship('SanBayTrungGian', backref='tuyenbay')
@@ -70,7 +69,6 @@ class ChuyenBay(BaseModel):
     ngaybay = Column(DateTime, default=datetime.now())
     tuyenbay_id= Column(Integer, ForeignKey('tuyenbay.id'),nullable=False)
     maybay_id = Column(Integer, ForeignKey('maybay.id'), nullable=False)
-
     tuyenbay = relationship('TuyenBay', backref='chuyenbay', lazy=False)
     hangghechuyenbay = relationship('HangGheChuyenBay', backref='chuyenbay', lazy=False)
     ghe = relationship('Ghe', backref='chuyenbay', lazy=False)
@@ -115,7 +113,7 @@ class ThongTinVe(BaseModel):
 
 class ThongTinTaiKhoan(db.Model):
     __tablename__ = 'thongtintaikhoan'
-    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True, )
+    user_id = Column(Integer, ForeignKey('user.id'),primary_key=True )
     name = Column(String(50),nullable=False)
     diachi = Column(String(50),nullable=False)
     cmnd = Column(String(50),nullable=False)
@@ -132,14 +130,15 @@ class User(BaseModel, UserMixin):
     password = Column(String(50),nullable=False)
     image = Column(String(100),nullable=True)
     thongtintaikhoan = relationship('ThongTinTaiKhoan', back_populates='user')
-    role = Column(Enum(RoleEnum), nullable=False)
+    role = Column(Enum(RoleEnum), default=RoleEnum.PASSENGER)
     def __str__(self):
-        return self.name
+        return self.username
 
 class HoaDon(BaseModel):
     __tablename__ = 'HoaDon'
     tongtien = Column(Float, default=0)
     hinhthucthanhtoan= Column(Enum(HinhThucThanhToan),nullable=False )
+    ngaythanhtoan= Column(DateTime, default=datetime.now())
     ve_id = Column(Integer,ForeignKey('thongtinve.id'), nullable= False)
 def addghe(hangghechuyenbay):
     try:
@@ -300,6 +299,14 @@ if __name__ == '__main__':
         addghe(h10)
         addghe(h11)
         addghe(h12)
-
-
+        tt1= ThongTinVe(thongtintaikhoan_id=3, chuyenbay_id=1, ghe_id=1)
+        tt2 = ThongTinVe(thongtintaikhoan_id=3, chuyenbay_id=1, ghe_id=2)
+        tt3 = ThongTinVe(thongtintaikhoan_id=4, chuyenbay_id=2, ghe_id=11)
+        tt4 = ThongTinVe(thongtintaikhoan_id=5, chuyenbay_id=3, ghe_id=23)
+        db.session.add_all([tt1,tt2,tt3,tt4])
+        hd1= HoaDon(ve_id=1, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=2000000)
+        hd2 = HoaDon(ve_id=2, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=2000000)
+        hd3 = HoaDon(ve_id=3, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=500000)
+        hd4 = HoaDon(ve_id=4, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=1000000)
+        db.session.add_all([hd1, hd2, hd3, hd4])
         db.session.commit()
