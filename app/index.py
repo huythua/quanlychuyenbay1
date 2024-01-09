@@ -3,7 +3,7 @@ from flask_login import UserMixin, login_user, login_required, logout_user, curr
 from app import dao, app, login_manager,db
 from app.models import RoleEnum
 import math
-from app.models import ThongTinTaiKhoan, User
+from app.models import ThongTinTaiKhoan, Ghe
 @app.route('/')
 def index():
     num = dao.count_chuyenbay()
@@ -29,14 +29,19 @@ def book(ghe_id, flight_id):
 @app.route('/choose_chair/<int:flight_id>/<int:hangghe_id>')
 def choose_chair(flight_id, hangghe_id):
     flights = dao.up_ghe()
-    matching_flights = [flight for flight in flights if flight[0].id == flight_id and flight[2].id == hangghe_id ]
-    # print(matching_flights)
+    matching_flights = [flight for flight in flights if flight[0].id == flight_id and flight[2].id == hangghe_id and flight[1].tinhtrang ==True ]
+    print(matching_flights)
     return render_template('choose_chair.html', matching_flights=matching_flights, data=flights)
 
 @app.route('/pay/<int:flight_id>/<int:ghe_id>')
 def pay(flight_id,ghe_id):
     dao.add_ve(flight_id,ghe_id)
-
+    chair = Ghe.query.filter(Ghe.id == ghe_id).first()
+    print(chair)
+    chair.tinhtrang = False
+    db.session.commit()
+    chair1 = Ghe.query.filter(Ghe.id == ghe_id).first()
+    print(chair1.tinhtrang)
     return render_template('pay.html')
 @app.route("/login", methods=['get', 'post'])
 def process_user_login():
