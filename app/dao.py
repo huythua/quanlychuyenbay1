@@ -3,19 +3,30 @@ from app.models import *
 import hashlib
 from flask_login import current_user
 from sqlalchemy import func
-import  cloudinary.uploader
 
-def load_tuyenbay():
-    return TuyenBay.query.all()
 
 def load_chuyenbay():
-    return ChuyenBay.query.all()
+    non_class_ChuyenBay = db.session.query(TuyenBay, ChuyenBay, GiaVe).select_from(ChuyenBay).join(TuyenBay).join(
+        GiaVe).all()
+    return non_class_ChuyenBay
+def load_tuyenbay():
+    return TuyenBay.query.all()
 def load_thongtintaikhoan():
     return ThongTinTaiKhoan.query.all()
-def load_giave():
-    return GiaVe.query.all()
 def load_hangghe():
     return HangGhe.query.all()
+def load_ghe():
+    return Ghe.query.all()
+def up_ghe():
+    choose_chair = (db.session.query(ChuyenBay, Ghe,HangGhe,HangGheChuyenBay).select_from(ChuyenBay).join(HangGheChuyenBay).
+                    join(HangGhe).join(Ghe, (Ghe.chuyenbay_id == ChuyenBay.id) & (Ghe.hangghe_id == HangGhe.id)).all())
+    return choose_chair
+
+def add_ve(cb_id,ghe_id):
+
+    infve = ThongTinVe(thongtintaikhoan_id=current_user.id, chuyenbay_id=cb_id, ghe_id=ghe_id)
+    db.session.add(infve)
+    db.session.commit()
 
 def get_user_by_id(user_id):
     return User.query.get(user_id)
@@ -28,6 +39,8 @@ def add_thongtin(user_id,name,diachi,sdt,mail,cmnd):
     info = ThongTinTaiKhoan(user_id=user_id,name=name, diachi=diachi, sdt=sdt, email=mail, cmnd=cmnd)
     db.session.add(info)
     db.session.commit()
+
+
 def auth_user(username, password):
     password = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
 
