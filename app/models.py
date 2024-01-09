@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime, event,Time, Boolean, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime, Boolean, Float
 from datetime import datetime
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
 from app import app, db
 from flask_login import UserMixin
 import enum
@@ -297,3 +297,4 @@ if __name__ == '__main__':
         hd4 = HoaDon(ve_id=4, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=1000000)
         db.session.add_all([hd1, hd2, hd3, hd4])
         db.session.commit()
+       

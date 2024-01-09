@@ -1,0 +1,146 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<h1 class="text-center text-info">THỐNG KÊ BÁO CÁO</h1>
+
+<div class="row">
+    <div class="col-md-5 col-xs-12">
+        <table class="table">
+            <tr>
+                <th>Tuyến bay ID</th>
+                <th>Số lần bay</th>
+                <th>Doanh thu</th>
+            </tr>
+            {% for s in stats %}
+            <tr>
+                <td>{{s[0]}}</td>
+                <td>{{s[1]}}</td>
+                <td>{{"{:,.0f}".format(s[2])}} VNĐ</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="col-md-7 col-xs-12">
+        <canvas id="myChart"></canvas>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5 col-xs-12">
+        <table class="table">
+            <tbody>
+                <!-- Dòng 1 -->
+                <tr>
+                    <td colspan="5">Dòng 1 - Một cột</td>
+                </tr>
+
+                <!-- Dòng 2 -->
+                <tr>
+                    <td colspan="5">Dòng 2 - Một cột</td>
+                </tr>
+
+                <!-- Dòng 3 -->
+                <tr>
+                    <td>Dòng 3 - Cột 1</td>
+                    <td>Dòng 3 - Cột 2</td>
+                    <td>Dòng 3 - Cột 3</td>
+                    <td>Dòng 3 - Cột 4</td>
+                    <td>Dòng 3 - Cột 5</td>
+                </tr>
+
+                <!-- Dòng 4 -->
+                <tr>
+                    <td>Dòng 4 - Cột 1</td>
+                    <td>Dòng 4 - Cột 2</td>
+                    <td>Dòng 4 - Cột 3</td>
+                    <td>Dòng 4 - Cột 4</td>
+                    <td>Dòng 4 - Cột 5</td>
+                </tr>
+
+                <!-- Dòng 5 -->
+                <tr>
+                    <td>Dòng 5 - Cột 1</td>
+                    <td>Dòng 5 - Cột 2</td>
+                    <td>Dòng 5 - Cột 3</td>
+                    <td>Dòng 5 - Cột 4</td>
+                    <td>Dòng 5 - Cột 5</td>
+                </tr>
+
+                <!-- Dòng 6 -->
+                <tr>
+                    <td colspan="5">Dòng 6 - Một cột</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-7 col-xs-12">
+        <canvas id="myChart2"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let data=[];
+  let labels=[];
+
+  let mData=[];
+  let mLabels=[];
+
+  {% for s in stats %}
+  data.push({{s[2]}})
+  labels.push('{{s[1]}}')
+  {% endfor %}
+
+  {% for s in mon_stats %}
+  mData.push({{s[1]}})
+  mLabels.push({{s[0]}})
+  {% endfor %}
+
+  window.onload = function() {
+    const ctx = document.getElementById('myChart');
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '# Doanh thu',
+          data: data,
+          borderWidth: 1,
+          backgroundColor: ['red', 'green', 'blue', 'gold', 'brown']
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    const ctx2 = document.getElementById('myChart2');
+
+    new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: mLabels,
+        datasets: [{
+          label: '# Doanh thu',
+          data: mData,
+          borderWidth: 1,
+          backgroundColor: ['red', 'green', 'blue', 'gold', 'brown']
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+</script>
+{% endblock %}

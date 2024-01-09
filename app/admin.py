@@ -7,8 +7,12 @@ from app.models import  RoleEnum, TuyenBay, User, SanBay, SanBayTrungGian,HangGh
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
+class MyAdmin(AdminIndexView):
+    @expose('/')
+    def index(self):
+        return self.render('admin/index.html', stats=dao.count_chuyenbays())
 
-admin = Admin(app=app, name='HỆ THỐNG ĐẶT VÉ MÁY BAY', template_mode='bootstrap4')
+admin = Admin(app=app, name='HỆ THỐNG ĐẶT VÉ MÁY BAY', template_mode='bootstrap4', index_view=MyAdmin())
 
 
 class AuthenticatedAdmin(ModelView):
@@ -16,6 +20,9 @@ class AuthenticatedAdmin(ModelView):
         return current_user.is_authenticated and current_user.role == RoleEnum.ADMIN
 
 
+class AuthenticatedUser(BaseView):
+    def is_accessible(self):
+        return current_user.is_authenticated
 
 
 
@@ -47,7 +54,10 @@ class TuyenBayView(AuthenticatedAdmin):
     # Tùy chỉnh trường chuyenbay để không hiển thị trong mẫu tạo mới
     form_excluded_columns = ['chuyenbay']
 
-
+class ThongKeView(AuthenticatedUser):
+    @expose("/")
+    def index(self):
+        return self.render('admin/thongke.html', stats=dao.thongketheothang(2))
 
 class SanBayTrungGianView(AuthenticatedAdmin):
     column_list = ('tuyenbay_id','tuyenbay','sanbay', 'ghichu','time')
@@ -156,10 +166,7 @@ class LogoutView(BaseView):
 
     def is_accessible(self):
         return current_user.is_authenticated
-class MyAdmin(AuthenticatedAdmin):
-    @expose('/')
-    def index(self):
-        return self.render('admin/index.html', stats=dao.count_chuyenbay())
+
 
 admin.add_view(UserView(User, db.session))
 admin.add_view(TuyenBayView(TuyenBay, db.session))
@@ -171,4 +178,5 @@ admin.add_view(ChuyenBayView(ChuyenBay, db.session))
 admin.add_view(HangGheChuyenBayView(HangGheChuyenBay, db.session))
 admin.add_view(ThongTinVeView(ThongTinVe, db.session))
 admin.add_view(HoaDonView(HoaDon, db.session))
+admin.add_view(ThongKeView(name='Thống kê báo cáo'))
 admin.add_view(LogoutView(name="Đăng xuất"))

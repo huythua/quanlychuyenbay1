@@ -6,7 +6,7 @@ import math
 from app.models import ThongTinTaiKhoan, User
 @app.route('/')
 def index():
-
+    print(dao.thongketheothang(2))
     tuyenbay = dao.load_tuyenbay()
     chuyenbay= dao.load_chuyenbay()
     num= dao.count_chuyenbay()

@@ -33,16 +33,24 @@ def auth_user(username, password):
 
     return User.query.filter(User.username.__eq__(username.strip()),
                              User.password.__eq__(password)).first()
-def thongketheothang(thang):
-    query= (db.session.query(
-            ThongTinVe.tuyenbay_id,
-            func.sum(ThongTinVe.giave).label('doanhthu')).filter(func.strftime('%Y-%m', ThongTinVe.ngaydat) == thang)
-            .group_by(ThongTinVe.tuyenbay_id)
-            .all()
-            )
-def tuyenbay_stats():
-   return TuyenBay.query.join(ChuyenBay,ChuyenBay.tuyenbay_id.__eq__(TuyenBay.id))\
-                        .add_column(func.count(ChuyenBay.id))\
-                        .group_by(TuyenBay.id, TuyenBay.name).all()
 def count_chuyenbay():
     return ChuyenBay.query.count()
+
+def count_chuyenbays():
+    query = (
+        db.session.query(TuyenBay.id, TuyenBay.name, func.count(ChuyenBay.id).label('chuyenbay_count'))
+        .outerjoin(ChuyenBay, ChuyenBay.tuyenbay_id == TuyenBay.id)
+        .group_by(TuyenBay.id, TuyenBay.name)
+    )
+
+    result = query.all()
+    return result
+def thongketheothang(thang):
+    query = db.session.query(TuyenBay.id,func.count(ChuyenBay.id),func.sum(GiaVe.giave)) \
+                        .join(ThongTinVe, ThongTinVe.chuyenbay_id == GiaVe.tuyenbay_id)\
+                        .join(Ghe, Ghe.id == ThongTinVe.ghe_id)\
+                        .join(ChuyenBay, ChuyenBay.id == ThongTinVe.chuyenbay_id) \
+                        .filter(ChuyenBay.tuyenbay_id == TuyenBay.id, func.month(ChuyenBay.ngaybay) == thang)\
+                        .group_by(TuyenBay.id)
+    result = query.all()
+    return result

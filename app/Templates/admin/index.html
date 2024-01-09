@@ -4,27 +4,13 @@
 
 
 {% if current_user.is_authenticated %}
-<h1 class="text-center text-info">CHÀO MỪNG ĐẾN TRANG QUẢN TRỊ!</h1>
-<h2 class="text-info">Chào {{ current_user }}!</h2>
+ <h1 class="text-center text-info">CHÀO MỪNG ĐẾN TRANG QUẢN TRỊ!</h1>
+    <h2 class="text-info">Chào {{ current_user }}!</h2>
 
-<div class="row">
-  <div class="col-md-5">
-    {{stats}}
-    <table class="table">
-      <tr>
-        <th>Mã tuyến bay</th>
-        <th>Tên tuyến bay</th>
-        <th>Lượt bay</th>
-      </tr>
-      {% for s in stats %}
-      <tr>
-        <td>{{s[0]}}</td>
-        <td>{{s[1]}}</td>
-        <td>{{s[2]}}</td>
-      </tr>
-      {% endfor %}
-    </table>
-  </div>
+    <div class="row">
+        <div class="col-md-5">
+
+        </div>
   <div class="col-md-7">
     <canvas id="myChart"></canvas>
   </div>
