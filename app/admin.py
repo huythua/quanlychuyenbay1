@@ -1,7 +1,7 @@
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import Admin, BaseView, expose, AdminIndexView
 from flask_login import current_user, logout_user
-from flask import redirect
+from flask import redirect, request
 from app import app, db, Admin, dao
 from app.models import  RoleEnum, TuyenBay, User, SanBay, SanBayTrungGian,HangGhe,GiaVe, ChuyenBay, HangGheChuyenBay, Ghe, ThongTinVe,HoaDon
 from sqlalchemy import event
@@ -57,8 +57,8 @@ class TuyenBayView(AuthenticatedAdmin):
 class ThongKeView(AuthenticatedUser):
     @expose("/")
     def index(self):
-        return self.render('admin/thongke.html', stats=dao.thongketheothang(2))
-
+        thang= request.args.get("thang")
+        return self.render('admin/thongke.html', stats=dao.thongketheothang(thang), stats1 = dao.tongluotbayvatongtien(thang))
 class SanBayTrungGianView(AuthenticatedAdmin):
     column_list = ('tuyenbay_id','tuyenbay','sanbay', 'ghichu','time')
     column_display_pk = True

@@ -46,11 +46,23 @@ def count_chuyenbays():
     result = query.all()
     return result
 def thongketheothang(thang):
-    query = db.session.query(TuyenBay.id,func.count(ChuyenBay.id),func.sum(GiaVe.giave)) \
-                        .join(ThongTinVe, ThongTinVe.chuyenbay_id == GiaVe.tuyenbay_id)\
+    query = db.session.query(TuyenBay.id,TuyenBay.name,func.count(ChuyenBay.id),func.sum(HoaDon.tongtien)) \
+                        .join(ThongTinVe, ThongTinVe.id == HoaDon.ve_id)\
                         .join(Ghe, Ghe.id == ThongTinVe.ghe_id)\
                         .join(ChuyenBay, ChuyenBay.id == ThongTinVe.chuyenbay_id) \
                         .filter(ChuyenBay.tuyenbay_id == TuyenBay.id, func.month(ChuyenBay.ngaybay) == thang)\
-                        .group_by(TuyenBay.id)
+                        .group_by(TuyenBay.id, TuyenBay.name)
     result = query.all()
+    return result
+def tongluotbayvatongtien(thang):
+    query = (
+        db.session.query(
+            func.count(ChuyenBay.id),
+            func.sum(HoaDon.tongtien))
+            .join(ThongTinVe, ThongTinVe.id == HoaDon.ve_id)
+            .join(Ghe, Ghe.id == ThongTinVe.ghe_id)
+            .join(ChuyenBay, ChuyenBay.id == ThongTinVe.chuyenbay_id)
+            .filter(ChuyenBay.tuyenbay_id == TuyenBay.id, func.month(ChuyenBay.ngaybay) == thang)
+    )
+    result = query.first()
     return result

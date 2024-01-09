@@ -233,7 +233,7 @@ if __name__ == '__main__':
 
         ngay=datetime(2024,2,12,12,40,00)
         ngay1 = datetime(2024, 2, 2, 10, 00, 00)
-        ngay2 = datetime(2024, 2, 22, 10, 00, 00)
+        ngay2 = datetime(2024, 1, 22, 10, 00, 00)
         cb1 = ChuyenBay(tuyenbay_id=1, maybay_id=1, ngaybay=ngay, tinhtrang=True,
                         image="https://wallpapercave.com/wp/9aungfd.jpg", name='Chuyến bay 1')
         cb2 = ChuyenBay(tuyenbay_id=2, maybay_id=2,ngaybay=ngay, tinhtrang=True,
@@ -290,11 +290,15 @@ if __name__ == '__main__':
         tt2 = ThongTinVe(thongtintaikhoan_id=3, chuyenbay_id=1, ghe_id=2)
         tt3 = ThongTinVe(thongtintaikhoan_id=4, chuyenbay_id=2, ghe_id=11)
         tt4 = ThongTinVe(thongtintaikhoan_id=5, chuyenbay_id=3, ghe_id=23)
-        db.session.add_all([tt1,tt2,tt3,tt4])
+        tt5 = ThongTinVe(thongtintaikhoan_id=4, chuyenbay_id=7, ghe_id=78)
+        tt6 = ThongTinVe(thongtintaikhoan_id=5, chuyenbay_id=8, ghe_id=85)
+        db.session.add_all([tt1,tt2,tt3,tt4,tt5,tt6])
         hd1= HoaDon(ve_id=1, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=2000000)
         hd2 = HoaDon(ve_id=2, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=2000000)
         hd3 = HoaDon(ve_id=3, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=500000)
         hd4 = HoaDon(ve_id=4, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=1000000)
-        db.session.add_all([hd1, hd2, hd3, hd4])
+        hd5 = HoaDon(ve_id=5, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=1200000)
+        hd6 = HoaDon(ve_id=6, hinhthucthanhtoan=HinhThucThanhToan.CHUYENKHOAN, tongtien=4000000)
+        db.session.add_all([hd1, hd2, hd3, hd4,hd5,hd6])
         db.session.commit()
        
