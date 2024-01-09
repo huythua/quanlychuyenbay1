@@ -1,0 +1,35 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+    <div class="container mt-5">
+      <h2>Chọn Hình Thức Thanh Toán</h2>
+
+      <form>
+        <div class="form-group">
+          <label for="paymentMethod">Chọn Hình Thức:</label>
+          <select class="form-control" id="paymentMethod" name="paymentMethod">
+            <option value="creditCard">Thẻ Tín Dụng</option>
+            <option value="paypal">PayPal</option>
+            <option value="bankTransfer">Chuyển Khoản Ngân Hàng</option>
+              <option value="bankTransfer">Tiền Mặt (khi xác nhận tại quầy)</option>
+          </select>
+        </div>
+
+          <button type="button" class="btn btn-primary" onclick="confirmPayment()"><a href="/" class="btn btn-danger">Xác Nhận Thanh Toán</a></button>
+      </form>
+    </div>
+
+    <!-- Link JS và Popper.js cho Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"></script>
+    <!-- Link JS Bootstrap -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+    function confirmPayment() {
+      var selectedPaymentMethod = document.getElementById("paymentMethod").value;
+      alert("Bạn đã chọn hình thức thanh toán: " + selectedPaymentMethod);
+      // Thực hiện các hành động xác nhận thanh toán tại đây
+    }
+    </script>
+{% endblock %}

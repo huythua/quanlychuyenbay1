@@ -6,16 +6,38 @@ import math
 from app.models import ThongTinTaiKhoan, User
 @app.route('/')
 def index():
-    print(dao.thongketheothang(2))
-    tuyenbay = dao.load_tuyenbay()
-    chuyenbay= dao.load_chuyenbay()
-    num= dao.count_chuyenbay()
-    giave = dao.load_giave()
-    hangghe = dao.load_hangghe()
-    return render_template('index.html',tuyenbay=tuyenbay, chuyenbay=chuyenbay, giave=giave,
-                           hangghe=hangghe,
-                           pages=math.ceil(num/app.config['PAGE_SIZE']))
+    num = dao.count_chuyenbay()
+    return render_template('index.html', data=dao.load_chuyenbay(), pages=math.ceil(num / app.config['PAGE_SIZE']))
+@app.route('/book')
+def payment():
+    return render_template('book.html')
 
+@app.route('/book/<int:flight_id>/<int:ghe_id>')
+@login_required
+def book(ghe_id, flight_id):
+    # return render_template('book.html')
+    # load_data = dao.load_data()
+
+    flights = dao.load_chuyenbay()
+    ghes = dao.load_ghe()
+    ghe = next((f for f in ghes if f.id == ghe_id), None)
+    flight = next((f for f in flights if f[1].id == flight_id and f[2].hangghe_id==ghe.hangghe_id), None)
+    if flight:
+        return render_template('book.html', flight=flight, ghe=ghe)
+    else:
+        return "Flight not found"
+@app.route('/choose_chair/<int:flight_id>/<int:hangghe_id>')
+def choose_chair(flight_id, hangghe_id):
+    flights = dao.up_ghe()
+    matching_flights = [flight for flight in flights if flight[0].id == flight_id and flight[2].id == hangghe_id ]
+    # print(matching_flights)
+    return render_template('choose_chair.html', matching_flights=matching_flights, data=flights)
+
+@app.route('/pay/<int:flight_id>/<int:ghe_id>')
+def pay(flight_id,ghe_id):
+    dao.add_ve(flight_id,ghe_id)
+
+    return render_template('pay.html')
 @app.route("/login", methods=['get', 'post'])
 def process_user_login():
     if request.method.__eq__('POST'):
