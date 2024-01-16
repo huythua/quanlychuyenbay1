@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime, Boolean, Float
 from datetime import datetime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 from app import app, db
 from flask_login import UserMixin
 import enum
@@ -17,6 +17,9 @@ class HinhThucThanhToan(enum.Enum):
 class BaseModel(db.Model):
     __abstract__=True
     id = Column(Integer, primary_key=True, autoincrement=True)
+class QuyDinh(BaseModel):
+    __tablename__= 'quydinh'
+    soluongsanbaytrungian = Column(Integer, nullable=False, default=2)
 class MayBay(BaseModel):
     __tablename__= 'maybay'
     name = Column(String(50), nullable=False)
@@ -36,9 +39,6 @@ class TuyenBay(db.Model):
     diemden = relationship('SanBay', foreign_keys=[diemden_id], back_populates='tuyenbays_den', lazy=True)
     sanbaytrunggians = relationship('SanBayTrungGian', backref='tuyenbay')
     giave = relationship('GiaVe', backref='tuyenbay', lazy=True)
-
-    def __str__(self):
-        return self.name
 
 
 class SanBay(db.Model):
@@ -107,7 +107,7 @@ class ThongTinVe(BaseModel):
     __tablename__= 'thongtinve'
     thongtintaikhoan_id = Column(Integer, ForeignKey('thongtintaikhoan.user_id'), nullable=False)
     chuyenbay_id = Column(Integer, ForeignKey('chuyenbay.id'), nullable=False)
-    ghe_id = Column(Integer, ForeignKey('ghe.id'), nullable=False)
+    ghe_id = Column(Integer, ForeignKey('ghe.id'), nullable=False, unique=True)
     hoadon_id = relationship('HoaDon', backref='thongtinve')
     chuyenbay = relationship('ChuyenBay', backref='thongtinve')
 
@@ -126,7 +126,7 @@ class ThongTinTaiKhoan(db.Model):
         return self.name
 class User(BaseModel, UserMixin):
     __tablename__ = 'user'
-    username = Column(String(50),nullable=False)
+    username = Column(String(50),nullable=False, unique=True)
     password = Column(String(50),nullable=False)
     image = Column(String(100),nullable=True)
     thongtintaikhoan = relationship('ThongTinTaiKhoan', back_populates='user')
